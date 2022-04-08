@@ -1,0 +1,5 @@
+#!/usr/bin/bash
+
+[[ -e /run/dbus/pid ]] && rm -f /run/dbus/pid;
+
+dbus-daemon --system;

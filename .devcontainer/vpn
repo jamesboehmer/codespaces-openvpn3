@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+function usage {
+	echo "$0 connect|disconnect|reconnect|stats|log [1-6]";
+	exit 0;
+}
+
+function ensure_config {
+	if [[ ! -f ~/.vpnconfig.ovpn ]]
+	then
+		if [[ ! -z "${OPENVPN_CONFIG}" ]]
+		then 
+    		echo "${OPENVPN_CONFIG}" > ~/.vpnconfig.ovpn;
+    	else
+    		echo 'Missing OpenVPN config.  Place it in ~/.vpnconfig.ovpn or set $OPENVPN_CONFIG environment variable';
+    		exit 1;
+    	fi
+	fi
+	ps -ef | grep 'dbus-daemon' | grep -v grep &>/dev/null;
+	if [[ $? -ne 0 ]]
+	then
+		SUDOCMD="";
+		[[ $(id -u) != "0" ]] && SUDOCMD="sudo ";
+		echo "It looks like dbus-daemon isn't running.  Try running ${SUDOCMD}/usr/local/bin/init-dbus-daemon";
+		exit 1;
+	fi
+}
+
+[[ $# -lt 1 ]] && usage;
+
+case $1 in
+	connect )
+		ensure_config;
+		openvpn3 session-start -c ~/.vpnconfig.ovpn;
+		;;
+	disconnect )
+		ensure_config;
+		openvpn3 session-manage --disconnect -c ~/.vpnconfig.ovpn;
+		;;
+	reconnect )
+		ensure_config;
+		openvpn3 session-manage --reconnect -c ~/.vpnconfig.ovpn;
+		;;
+	stats )
+		ensure_config;
+		openvpn3 session-stats -c ~/.vpnconfig.ovpn;
+		;;
+	log )
+		ensure_config;
+		LOGLEVELARG=""
+		if [[ $# -gt 1 ]]
+		then
+			LOGLEVELARG="--log-level ${2}"
+		fi
+		openvpn3 log ${LOGLEVELARG} -c ~/.vpnconfig.ovpn;
+		;;
+	*)
+	  usage;;
+esac
