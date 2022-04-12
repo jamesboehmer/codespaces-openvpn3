@@ -5,10 +5,7 @@
 	},
 
 	// Allow the container to interact with host networking
-	"runArgs": ["--cap-add=NET_ADMIN", "--cap-add=NET_RAW", "--cap-add=DAC_OVERRIDE", "--device=/dev/net/tun"],
-
-	// openvpn3 requires dbus-broker
-	"postStartCommand": "sudo /usr/local/bin/init-dbus-daemon",
+	"runArgs": ["--cap-add=NET_ADMIN", "--cap-add=NET_RAW", "--device=/dev/net/tun"],
 
 	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode"

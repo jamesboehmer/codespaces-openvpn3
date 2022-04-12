@@ -6,23 +6,37 @@ function usage {
 }
 
 function ensure_config {
+	# Check for the config, first in file, followed by environment.  Fail if we can't find it.
 	if [[ ! -f ~/.vpnconfig.ovpn ]]
 	then
 		if [[ ! -z "${OPENVPN_CONFIG}" ]]
 		then 
+			echo 'Storing $OPENVPN_CONFIG in ~/.vpnconfig.ovpn...';
     		echo "${OPENVPN_CONFIG}" > ~/.vpnconfig.ovpn;
     	else
     		echo 'Missing OpenVPN config.  Place it in ~/.vpnconfig.ovpn or set $OPENVPN_CONFIG environment variable';
     		exit 1;
     	fi
 	fi
+
+	# If we're not root, the following commands will need sudo
+	SUDOCMD="";
+	[[ $(id -u) != "0" ]] && SUDOCMD="sudo ";
+
+	# Check for dbus-daemon
 	ps -ef | grep 'dbus-daemon' | grep -v grep &>/dev/null;
 	if [[ $? -ne 0 ]]
 	then
-		SUDOCMD="";
-		[[ $(id -u) != "0" ]] && SUDOCMD="sudo ";
-		echo "It looks like dbus-daemon isn't running.  Try running ${SUDOCMD}/usr/local/bin/init-dbus-daemon";
-		exit 1;
+		echo "Starting dbus-daemon...";
+		[[ -e /run/dbus/pid ]] && ${SUDOCMD}rm -f /run/dbus/pid;
+		${SUDOCMD}/usr/bin/dbus-daemon --system;
+	fi
+
+	ps -ef | grep 'openvpn3-service-netcfg' | grep -v grep &>/dev/null;
+	if [[ $? -ne 0 ]]
+	then
+		echo "Starting openvpn3-service-netcfg...";
+		${SUDOCMD}nohup /usr/lib/x86_64-linux-gnu/openvpn3-linux/openvpn3-service-netcfg &>/dev/null &
 	fi
 }
 
