@@ -4,9 +4,6 @@ FROM mcr.microsoft.com/vscode/devcontainers/base:0-${VARIANT}
 ARG VARIANT
 
 # Install openvpn client
-# RUN export DEBIAN_FRONTEND=noninteractive && \
-# apt update && \
-# apt -y install apt-transport-https curl gnupg apt-utils  && \
 RUN export DEBIAN_FRONTEND=noninteractive && \
 curl https://swupdate.openvpn.net/repos/openvpn-repo-pkg-key.pub > /usr/share/keyrings/openvpn-repo-pkg-key.pub && \
 apt-key add /usr/share/keyrings/openvpn-repo-pkg-key.pub  && \
